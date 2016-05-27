@@ -15,6 +15,7 @@ var (
 	Password string
 	Token    string
 	BotID    string
+	db	*sql.DB
 )
 
 func init() {
@@ -27,6 +28,7 @@ func init() {
 
 var userid int
 
+
 func main() {
 
 
@@ -38,6 +40,12 @@ func main() {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
+
+	database,err := sql.Open("mysql", "user:password@/database")
+	if err != nil {
+       		panic(err.Error()) // proper error handling instead of panic in your app
+	}
+	db = database
 
 	// Register messageCreate as a callback for the messageCreate events.
 	dg.AddHandler(messageCreate)
@@ -57,13 +65,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	//First, see if this image contains the keyword ~yuri
 	if(strings.HasPrefix(strings.ToLower(m.Content), "~yuri")){
 	//The image does contain the keyword. Connect to the database and get ready to do some work.
+		db.Ping()
 		s.ChannelTyping(m.ChannelID)
-
-		db, err := sql.Open("mysql", "user:password@/database")
-		if err != nil {
-        		//panic(err.Error()) // proper error handling instead of panic in your app
-			s.ChannelMessageSend(m.ChannelID, "Error: Could not connect to database. Please contact my author and remember I am a work in progress.")
-    		}
 
 		//Remove the keyword from the inputted
 		var comm = strings.TrimPrefix(m.Content, "~yuri ")
